@@ -1,2 +1,2 @@
 # wireshark-ccis
-Wireshark Lua dissector for Nec CCIS protocol
+Wireshark Lua dissector (analyzer) for Nec CCIS protocol
