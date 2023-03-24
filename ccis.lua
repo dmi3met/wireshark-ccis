@@ -14,7 +14,7 @@ function ccis_protocol.dissector(buffer, pinfo, tree)
     pinfo.cols.protocol = ccis_protocol.name
   
     local subtree = tree:add(ccis_protocol, buffer(), "CCIS NEC Protocol Data")
-    -- subtree:add(message_length, buffer(11,2))
+		subtree:add(message_length, buffer(11,2))
   
     if length>26 then
         local from_ip = bytes_to_ip(buffer,26)
@@ -34,10 +34,11 @@ function ccis_protocol.dissector(buffer, pinfo, tree)
 	-- udp_ip_remote = bytes_to_ip(buffer,62)
 	-- subtree:add_le("UDP IP Local: " .. udp_ip_local)
 	-- subtree:add_le("UDP IP Remote: " .. udp_ip_remote)
-	local opcode_number = buffer(94,1):le_uint()
+	local opcode_number = buffer(101,1):bytes():tohex()
+	
     local opcode_name = get_opcode_name(opcode_number, buffer)
     pinfo.cols.info = opcode_name
-	subtree:add_le(opcode_number,         buffer(12,4)):append_text(" " .. opcode_name .. "")
+	subtree:add_le(opcode_number .. "--" .. opcode_name .. "")
 	local opc = buffer(96,1)
 	subtree:add_le("OPC " .. opc)
 	if opcode_name == "INVITE" then
@@ -80,77 +81,16 @@ end
 function get_opcode_name(opcode, buffer)
     local opcode_name = "Unknown"
 
-        if opcode == 1 then opcode_name = "1--"
-    elseif opcode == 2 then opcode_name = "2--"
-    elseif opcode == 3 then opcode_name = "3--"
-    elseif opcode == 4 then opcode_name = "4--"
-    elseif opcode == 5 then opcode_name = "5--"
-    elseif opcode == 6 then opcode_name = "6--"
-    elseif opcode == 7 then opcode_name = "7-BYE-Clear forward signal message"
-    elseif opcode == 8 then opcode_name = "8-OK"
-    elseif opcode == 9 then opcode_name = "9--"
-    elseif opcode == 10 then opcode_name = "10--"
-    elseif opcode == 11 then opcode_name = "11--"
-    elseif opcode == 12 then opcode_name = "12--"
-    elseif opcode == 13 then opcode_name = "13--"
-    elseif opcode == 14 then opcode_name = "14--"
-    elseif opcode == 15 then opcode_name = "15--"
-    elseif opcode == 16 then opcode_name = "16--"
-    elseif opcode == 17 then opcode_name = "17-O/G Queuing cancel message"
-    elseif opcode == 18 then opcode_name = "18--"
-    elseif opcode == 19 then opcode_name = "19--"
-	elseif opcode == 20 then opcode_name = "20--"
-    elseif opcode == 21 then opcode_name = "21--"
-    elseif opcode == 22 then opcode_name = "22--"
-    elseif opcode == 23 then opcode_name = "23--"
-    elseif opcode == 24 then opcode_name = "24-Subscriber busy signal message"
-    elseif opcode == 25 then opcode_name = "25--"
-    elseif opcode == 26 then opcode_name = "26-Address complete message"
-    elseif opcode == 27 then opcode_name = "27-Service set message"
-    elseif opcode == 28 then opcode_name = "28--"
-    elseif opcode == 29 then opcode_name = "29--"
-    elseif opcode == 30 then opcode_name = "30--"
-    elseif opcode == 31 then opcode_name = "31--"
-    elseif opcode == 32 then opcode_name = "32--"
-    elseif opcode == 33 then opcode_name = "33--"
-    elseif opcode == 34 then opcode_name = "34--"
-    elseif opcode == 35 then opcode_name = "35--"
-    elseif opcode == 36 then opcode_name = "36--"
-    elseif opcode == 37 then opcode_name = "37--"
-    elseif opcode == 38 then opcode_name = "38--"
-    elseif opcode == 39 then opcode_name = "39--"
-    elseif opcode == 40 then opcode_name = "40--"
-    elseif opcode == 41 then opcode_name = "41--"
-    elseif opcode == 42 then opcode_name = "42--"
-    elseif opcode == 43 then opcode_name = "43-Answer signal with information message"
-    elseif opcode == 44 then opcode_name = "44--"
-    elseif opcode == 45 then opcode_name = "45--"
-    elseif opcode == 46 then opcode_name = "46--"
-    elseif opcode == 47 then opcode_name = "47--"
-    elseif opcode == 48 then opcode_name = "48--"
-    elseif opcode == 49 then opcode_name = "49--"
-    elseif opcode == 50 then opcode_name = "50--"
-    elseif opcode == 51 then opcode_name = "51--"
-    elseif opcode == 52 then opcode_name = "52--"
-    elseif opcode == 53 then opcode_name = "53--"
-    elseif opcode == 54 then opcode_name = "54--"
-    elseif opcode == 55 then opcode_name = "55--"
-    elseif opcode == 56 then opcode_name = "56--"
-    elseif opcode == 57 then opcode_name = "57--"
-    elseif opcode == 58 then opcode_name = "58--"
-    elseif opcode == 59 then opcode_name = "59--"
-    elseif opcode == 60 then opcode_name = "60--"
-    elseif opcode == 61 then opcode_name = "61--"
-    elseif opcode == 62 then opcode_name = "62--"
-	elseif opcode == 63 then opcode_name = "63-INVITE-Initial address message with additional information"
-
-        end
-	if opcode == 7 then
-		local opcode7detail = buffer(101,1):le_uint()
-		if opcode7detail == 70 then opcode_name = "7-46-Clear forward signal message"
-		elseif opcode7detail == 54 then opcode_name = "7-36-Clear back signal message"
-		elseif opcode7detail == 23 then opcode_name = "7-17-Release guard signal message"
-		end
+    if opcode == "8E" then opcode_name = "8e-O/G Queuing cancel "
+    elseif opcode == "65" then opcode_name = "65-Subscriber busy  "
+    elseif opcode == "14" then opcode_name = "14-Address complete "
+    elseif opcode == "17" then opcode_name = "17-Release guard  "
+    elseif opcode == "27" then opcode_name = "27-Service set "
+    elseif opcode == "2F" then opcode_name = "2f-Answer with information "
+    elseif opcode == "3F" then opcode_name = "3f-Service set "
+	elseif opcode == "21" then opcode_name = "21-INVITE-Initial address with additional information"
+    elseif opcode == "46" then opcode_name = "46-Clear forward"
+    elseif opcode == "36" then opcode_name = "46-Clear back"
 	end
 	
     return opcode_name
